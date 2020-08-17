@@ -7,8 +7,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "2.0"
+actix-web = { version = "2.0.0", features=["openssl"] }
 actix-rt = "1.0"
+actix = "0.9.0"
+actix-web-actors = "2.0.0"
 actix-files = "0.2.2"
-tera = "1"
 env_logger = "0.7.1"
+tokio = { version = "0.2", features = ["full"] }
+serde = "1.0.115"
