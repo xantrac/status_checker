@@ -10,6 +10,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+const STATUS_CHECK_INTERVAL: Duration = Duration::from_secs(5);
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
@@ -21,36 +22,8 @@ async fn index() -> Result<NamedFile> {
 async fn ws_index(r: HttpRequest, stream: web::Payload) -> HttpResponse {
     println!("{:?}", r);
     let (address, res) = ws::start_with_addr(MyWebSocket::new(), &r, stream).unwrap();
+
     res
-}
-
-struct StatusPusherActor {
-    ws_addr: Addr<MyWebSocket>,
-}
-
-struct StatusMessage {
-    status: bool,
-}
-
-impl Message for StatusMessage {
-    type Result = Result<bool, std::io::Error>;
-}
-
-impl Actor for StatusPusherActor {
-    type Context = Context<Self>;
-
-    fn started(&mut self, ctx: &mut Context<Self>) {
-        thread::spawn(|| {
-            println!("STARTED");
-
-            // send_updated_status(&self.ws_addr);
-            thread::sleep(Duration::from_secs(3));
-        });
-    }
-}
-
-fn send_updated_status(actor_addr: &Addr<MyWebSocket>) -> () {
-    actor_addr.send(StatusMessage { status: true });
 }
 
 struct MyWebSocket {
@@ -65,10 +38,7 @@ impl Actor for MyWebSocket {
     /// Method is called on actor start.
     fn started(&mut self, ctx: &mut Self::Context) {
         self.hb(ctx);
-        let act = StatusPusherActor {
-            ws_addr: ctx.address(),
-        };
-        act.start();
+        self.status_check(ctx)
     }
 }
 
@@ -76,7 +46,7 @@ impl Handler<StatusMessage> for MyWebSocket {
     type Result = Result<bool, std::io::Error>;
 
     fn handle(&mut self, msg: StatusMessage, ctx: &mut Self::Context) -> Self::Result {
-        println!("Ping received {}", msg.status);
+        println!("MESSAGE received ");
 
         Ok(true)
     }
@@ -128,6 +98,12 @@ impl MyWebSocket {
             }
 
             ctx.ping(b"");
+        });
+    }
+
+    fn status_check(&self, ctx: &mut <Self as Actor>::Context) {
+        ctx.run_interval(STATUS_CHECK_INTERVAL, |act, ctx| {
+            ctx.text("BANANA");
         });
     }
 }
