@@ -1538,6 +1538,7 @@ dependencies = [
  "actix-web-actors",
  "env_logger",
  "serde",
+ "serde_json",
  "tokio",
 ]
 
