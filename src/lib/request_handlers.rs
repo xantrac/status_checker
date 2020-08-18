@@ -15,7 +15,6 @@ pub async fn ws_index(
     let (addr, res) = ws::start_with_addr(super::websocket_actor::Websocket::new(), &r, stream)?;
     data.get_ref()
         .do_send(super::monitor_actor::WsRegistration { address: addr });
-    super::status_server::start_polling(data.get_ref());
 
     Ok(res)
 }

@@ -1,4 +1,7 @@
 use actix::prelude::*;
+use std::time::Duration;
+
+const STATUS_UPDATE_INTERVAL: Duration = Duration::from_secs(5);
 
 pub struct MonitorActor {
     listeners: Vec<Addr<super::websocket_actor::Websocket>>,
@@ -7,7 +10,20 @@ pub struct MonitorActor {
 impl Actor for MonitorActor {
     type Context = Context<Self>;
 
-    fn started(&mut self, _: &mut Self::Context) {}
+    fn started(&mut self, ctx: &mut Self::Context) {
+        ctx.run_interval(STATUS_UPDATE_INTERVAL, |act, _ctx| {
+            println!("Polling status...");
+            let listeners = act.listeners.clone();
+            Arbiter::spawn(async {
+                let status = super::clients::github_status().await;
+                for listener in listeners {
+                    listener.do_send(super::websocket_actor::StatusEvent {
+                        status: (status).to_string(),
+                    });
+                }
+            });
+        });
+    }
 }
 
 pub struct WsRegistration {
