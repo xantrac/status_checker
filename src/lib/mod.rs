@@ -1,6 +1,7 @@
 mod clients;
 mod monitor_actor;
 mod request_handlers;
+mod status_server;
 mod websocket_actor;
 pub use self::monitor_actor::MonitorActor;
 use actix::prelude::*;

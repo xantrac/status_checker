@@ -2,7 +2,6 @@ use actix::prelude::*;
 use actix_web_actors::ws;
 use std::time::{Duration, Instant};
 
-const STATUS_CHECK_INTERVAL: Duration = Duration::from_secs(5);
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
@@ -15,7 +14,6 @@ impl Actor for Websocket {
 
     fn started(&mut self, ctx: &mut Self::Context) {
         self.hb(ctx);
-        self.check_status(ctx);
     }
 }
 
@@ -69,9 +67,5 @@ impl Websocket {
             }
             ctx.ping(b"");
         });
-    }
-
-    fn check_status(&self, ctx: &mut <Self as Actor>::Context) {
-        ctx.run_interval(STATUS_CHECK_INTERVAL, |_act, ctx| ctx.text("BANANA"));
     }
 }

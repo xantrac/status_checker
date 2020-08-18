@@ -1,28 +1,28 @@
 $(() => {
     var conn = null;
-    
+
     const update_status = (status) => {
-	$('#status').html(status);
-	$('#time').html(new Date().toLocaleString())
+        $('#status').html(status);
+        $('#time').html(new Date().toLocaleString())
     }
 
     const connect = () => {
-	disconnect();
-	const wsUri = (window.location.protocol=='https:'&&'wss://'||'ws://')+window.location.host + '/ws/';
-	conn = new WebSocket(wsUri);
+        disconnect();
+        const wsUri = (window.location.protocol == 'https:' && 'wss://' || 'ws://') + window.location.host + '/ws/';
+        conn = new WebSocket(wsUri);
 
-	conn.onmessage = function(e) {
-	    console.log(e)
-	    update_status("someting") 
-	};
+        conn.onmessage = function (e) {
+            console.log(e)
+            update_status(e.data)
+        };
     }
 
     const disconnect = () => {
         if (conn != null) {
-          conn.close();
-          conn = null;
+            conn.close();
+            conn = null;
         }
-      }
+    }
 
     connect()
 });
